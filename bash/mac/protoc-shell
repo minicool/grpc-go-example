@@ -25,3 +25,11 @@ BIN_TLS_PATH="../../bin/token/"
 protoc --proto_path=${PROTO_PATH}/token --go_out=plugins=grpc:${PROTO_PATH}/token ${PROTO_PATH}/token/${PROTO_TLS}
 go build -o ${BIN_TLS_PATH}/client ${GRPC_TLS}/client/client.go
 go build -o ${BIN_TLS_PATH}/server ${GRPC_TLS}/server/server.go
+
+echo "====build interceptor===="
+GRPC_TLS="../../interceptor/"
+BIN_TLS_PATH="../../bin/interceptor/"
+
+protoc --proto_path=${PROTO_PATH}/interceptor --go_out=plugins=grpc:${PROTO_PATH}/interceptor ${PROTO_PATH}/interceptor/${PROTO_TLS}
+go build -o ${BIN_TLS_PATH}/client ${GRPC_TLS}/client/client.go
+go build -o ${BIN_TLS_PATH}/server ${GRPC_TLS}/server/server.go
