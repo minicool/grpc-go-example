@@ -1,0 +1,28 @@
+{
+  "employees":[
+    {
+      "employerId":1,
+      "name":"jack",
+      "age":26,
+      "picName":"1.jpeg"
+    },
+    {
+      "employerId":2,
+      "name":"wang",
+      "age":23,
+      "picName":"2.jpeg"
+    },
+    {
+      "employerId":3,
+      "name":"chen",
+      "age":22,
+      "picName":"3.jpeg"
+    },
+    {
+      "employerId":4,
+      "name":"xu",
+      "age":25,
+      "picName":"4.jpeg"
+    }
+  ]
+}

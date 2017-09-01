@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package employer;
+option go_package = "employer";
+
+message Employer {
+    uint32 employerId = 1;
+    uint32 age = 2;    
+    string name = 3;
+    string picName = 4;
+}
+
+message EmployerRequest{
+    uint32 employerId = 1;
+}
+
+message EmployerResponse{
+    Employer employer = 1;
+}
+
+message EmployerListRequest{
+    uint32 employerIndex = 1;
+    uint32 employerCount = 2;
+}
+
+message EmployerListResponse{
+    repeated Employer employers = 1;
+}
+
+message EmployerMapRequest{
+
+}
+
+message EmployerMapResponse{
+    map<string,Employer> employerMap = 1;
+}
+
+message EmployerAllRequest{
+
+}
+
+message EmployerAllResponse{
+    repeated Employer employers = 1;
+}
+
+message EmployerImageRequest{
+    uint32 employerId = 1;
+    string picName = 2;
+    bytes picData = 3;
+}
+
+message EmployerImageResponse{
+    bool isSuccesd = 1;
+}
+
+message GetEmployerImageRequest{
+    uint32 employerId = 1;
+}
+
+message GetEmployerImageResponse{
+    string picName = 1;
+    bytes picData = 2;
+}
+
+//message GetEmployerAllImageRequest{
+//    repeated Employer employers = 1;
+//}
+//
+//message GetEmployerAllImageResponse{
+//    string picName = 1;
+//    bytes picData = 2;
+//}
+
+service EmployerService{
+    rpc getEmployer(EmployerRequest) returns (EmployerResponse);
+    rpc getEmployerList(EmployerListRequest) returns (EmployerListResponse);
+    rpc getEmployerMap(EmployerMapRequest) returns (EmployerMapResponse);
+    rpc getEmployerAll(EmployerAllRequest) returns (stream EmployerAllResponse);
+    rpc addEmployerImage(stream EmployerImageRequest)  returns (EmployerImageResponse);
+    rpc getEmployerImage(GetEmployerImageRequest)  returns (stream GetEmployerImageResponse);
+//    rpc getEmployerAllImage(stream GetEmployerAllImageRequest)  returns (stream GetEmployerAllImageResponse);
+}
