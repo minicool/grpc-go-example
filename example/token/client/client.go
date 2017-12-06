@@ -39,7 +39,7 @@ func main() {
 
 	if OpenTLS {
 		// TLS连接
-		creds, err := credentials.NewClientTLSFromFile("../../keys/server.pem", "server name")
+		creds, err := credentials.NewClientTLSFromFile("../../keys/server.pem", "minicool")
 		if err != nil {
 			grpclog.Fatalf("Failed to create TLS credentials %v", err)
 		}
