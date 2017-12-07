@@ -316,13 +316,13 @@ func main() {
 	endpoint := "127.0.0.1:50052"
 	conn, err := net.Listen("tcp", endpoint)
 	if err != nil {
-		grpclog.Fatalf("TCP Listen err:%v", err)
+		glog.Fatalf("TCP Listen err:%v", err)
 	}
 
 	//grpc server
 	creds, err := credentials.NewServerTLSFromFile("../../key/server.pem", "../../key/server.key")
 	if err != nil {
-		grpclog.Fatalf("Failed to create server TLS credentials %v", err)
+		glog.Fatalf("Failed to create server TLS credentials %v", err)
 	}
 	grpcServer := grpc.NewServer(grpc.Creds(creds))
 	pb.RegisterEmployerServiceServer(grpcServer, newServer())
@@ -331,12 +331,12 @@ func main() {
 	ctx := context.Background()
 	dcreds, err := credentials.NewClientTLSFromFile("../../key/server.pem", "minicool")
 	if err != nil {
-		grpclog.Fatalf("Failed to create client TLS credentials %v", err)
+		glog.Fatalf("Failed to create client TLS credentials %v", err)
 	}
 	dopts := []grpc.DialOption{grpc.WithTransportCredentials(dcreds)}
 	gwmux := runtime.NewServeMux()
 	if err = pb.RegisterEmployerServiceHandlerFromEndpoint(ctx, gwmux, endpoint, dopts); err != nil {
-		grpclog.Fatalf("Failed to register gw server: %v\n", err)
+		glog.Fatalf("Failed to register gw server: %v\n", err)
 	}
 
 	// http server
@@ -349,14 +349,14 @@ func main() {
 		TLSConfig: getTLSConfig(),
 	}
 
-	grpclog.Infof("gRPC and https listen on: %s\n", endpoint)
+	glog.Infof("gRPC and https listen on: %s\n", endpoint)
 
 	// start trace
 	go startTrace()
 
 	// start grpc
 	if err = srv.Serve(tls.NewListener(conn, srv.TLSConfig)); err != nil {
-		grpclog.Fatal("ListenAndServe: ", err)
+		glog.Fatal("ListenAndServe: ", err)
 	}
 
 	return
