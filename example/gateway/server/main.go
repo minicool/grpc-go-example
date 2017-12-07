@@ -23,6 +23,7 @@ import (
 	"io"
 	"flag"
 	"golang.org/x/net/http2"
+	"golang.org/x/net/trace"
 )
 
 func substr(s string, pos, length int) string {
@@ -296,6 +297,14 @@ func getTLSConfig() *tls.Config {
 	}
 }
 
+func startTrace() {
+	trace.AuthRequest = func(req *http.Request) (any, sensitive bool) {
+		return true, true
+	}
+	go http.ListenAndServe(":50051", nil)
+	glog.Info("Trace listen on 50051")
+}
+
 func main() {
 	//Init the command-line flags.
 	flag.Parse()
@@ -307,13 +316,13 @@ func main() {
 	endpoint := "127.0.0.1:50052"
 	conn, err := net.Listen("tcp", endpoint)
 	if err != nil {
-		glog.Fatalf("TCP Listen err:%v", err)
+		grpclog.Fatalf("TCP Listen err:%v", err)
 	}
 
 	//grpc server
 	creds, err := credentials.NewServerTLSFromFile("../../key/server.pem", "../../key/server.key")
 	if err != nil {
-		glog.Fatalf("Failed to create server TLS credentials %v", err)
+		grpclog.Fatalf("Failed to create server TLS credentials %v", err)
 	}
 	grpcServer := grpc.NewServer(grpc.Creds(creds))
 	pb.RegisterEmployerServiceServer(grpcServer, newServer())
@@ -322,12 +331,12 @@ func main() {
 	ctx := context.Background()
 	dcreds, err := credentials.NewClientTLSFromFile("../../key/server.pem", "minicool")
 	if err != nil {
-		glog.Fatalf("Failed to create client TLS credentials %v", err)
+		grpclog.Fatalf("Failed to create client TLS credentials %v", err)
 	}
 	dopts := []grpc.DialOption{grpc.WithTransportCredentials(dcreds)}
 	gwmux := runtime.NewServeMux()
 	if err = pb.RegisterEmployerServiceHandlerFromEndpoint(ctx, gwmux, endpoint, dopts); err != nil {
-		glog.Fatalf("Failed to register gw server: %v\n", err)
+		grpclog.Fatalf("Failed to register gw server: %v\n", err)
 	}
 
 	// http server
@@ -340,10 +349,14 @@ func main() {
 		TLSConfig: getTLSConfig(),
 	}
 
-	glog.Infof("gRPC and https listen on: %s\n", endpoint)
+	grpclog.Infof("gRPC and https listen on: %s\n", endpoint)
 
+	// start trace
+	go startTrace()
+
+	// start grpc
 	if err = srv.Serve(tls.NewListener(conn, srv.TLSConfig)); err != nil {
-		glog.Fatal("ListenAndServe: ", err)
+		grpclog.Fatal("ListenAndServe: ", err)
 	}
 
 	return
