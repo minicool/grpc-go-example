@@ -9,9 +9,11 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials" // 引入grpc认证包
+	//"google.golang.org/grpc/credentials" // 引入grpc认证包
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata" // 引入grpc meta包
+	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	"github.com/grpc-ecosystem/go-grpc-middleware/tags"
 )
 
 const (
@@ -20,7 +22,9 @@ const (
 )
 
 // 定义helloService并实现约定的接口
-type helloService struct{}
+type helloService struct{
+	ClientOpts  []grpc.DialOption
+}
 
 // HelloService ...
 var HelloService = helloService{}
@@ -56,6 +60,14 @@ func (h helloService) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.He
 	return resp, nil
 }
 
+func parseToken(token string) (struct{}, error) {
+	return struct{}{}, nil
+}
+
+func userClaimFromToken(struct{}) string {
+	return "foobar"
+}
+
 func main() {
 	listen, err := net.Listen("tcp", Address)
 	if err != nil {
@@ -63,13 +75,32 @@ func main() {
 	}
 
 	// TLS认证
+	/*
 	creds, err := credentials.NewServerTLSFromFile("../../keys/server.pem", "../../keys/server.key")
 	if err != nil {
 		grpclog.Fatalf("Failed to generate credentials %v", err)
 	}
+	*/
+
+	//middlerware
+	exampleAuthFunc := func(ctx context.Context) (context.Context, error) {
+		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
+		if err != nil {
+			return nil, err
+		}
+		tokenInfo, err := parseToken(token)
+		if err != nil {
+			return nil, grpc.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
+		}
+		grpc_ctxtags.Extract(ctx).Set("auth.sub", userClaimFromToken(tokenInfo))
+		newCtx := context.WithValue(ctx, "tokenInfo", tokenInfo)
+		return newCtx, nil
+	}
 
 	// 实例化grpc Server, 并开启TLS认证
-	s := grpc.NewServer(grpc.Creds(creds))
+	s := grpc.NewServer(/*grpc.Creds(creds),*/
+		grpc.StreamInterceptor(grpc_auth.StreamServerInterceptor(exampleAuthFunc)),
+		grpc.UnaryInterceptor(grpc_auth.UnaryServerInterceptor(exampleAuthFunc)), )
 
 	// 注册HelloService
 	pb.RegisterHelloServer(s, HelloService)
