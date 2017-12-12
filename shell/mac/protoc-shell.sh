@@ -3,16 +3,19 @@
 echo "------------build all proto--------------"
 
 #tls
-sh build-tls.sh
+#sh build-tls.sh
 
 #token
-sh build-token.sh
+#sh build-token.sh
 
 #interceptor
-sh build-interceptor.sh
+#sh build-interceptor.sh
 
 #normal
-sh build-normal.sh
+#sh build-normal.sh
 
 #gateway
-sh build-gateway.sh
+#sh build-gateway.sh
+
+#middler-ware
+sh build-middlerware.sh
